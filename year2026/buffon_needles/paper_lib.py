@@ -1,6 +1,6 @@
 """
 paper_lib — নোটবুক-পেপার স্টাইল chart toolkit
-Updated v2.0 | 2026-09-05
+Updated v2.1 | 2026-09-06  (random_point/random_points-এ buff = border restriction)
 
 Logical inheritance map:
     manim.Rectangle   + PaperOps       -> Paper
@@ -24,10 +24,25 @@ from manim import NumberPlane as _ManimNumberPlane
 class CoordinateOps:
     """Axes/NumberPlane-এর mixin: random point tools (এখন instance method)।"""
 
-    def random_point(self, x_range=None, y_range=None, **kwargs):
-        """একটা random Dot — default range = object-এর নিজের range।"""
-        x_min, x_max = (x_range[0], x_range[1]) if x_range else (self.x_range[0], self.x_range[1])
-        y_min, y_max = (y_range[0], y_range[1]) if y_range else (self.y_range[0], self.y_range[1])
+    def random_point(self, x_range=None, y_range=None, buff=0.0, **kwargs):
+        """একটা random Dot — default range = object-এর নিজের range।
+
+        buff = border restriction (Munit): পুরো object-এর bbox থেকে চারদিক
+        (উপর, নিচ, বাম, ডান) buff পরিমাণ ভিতরে ঢুকে অদৃশ্য ছোট area-তে
+        point পড়ে। buff=0 (default) = আগের মতো পুরো area।
+        """
+        if buff < 0:
+            raise ValueError(f"buff must be >= 0, got {buff}")
+        if buff > 0:
+            x_min = self.p2c(self.get_left() + buff * RIGHT)[0]
+            x_max = self.p2c(self.get_right() + buff * LEFT)[0]
+            y_min = self.p2c(self.get_bottom() + buff * UP)[1]
+            y_max = self.p2c(self.get_top() + buff * DOWN)[1]
+        else:
+            x_min, x_max = (x_range[0], x_range[1]) if x_range else (self.x_range[0], self.x_range[1])
+            y_min, y_max = (y_range[0], y_range[1]) if y_range else (self.y_range[0], self.y_range[1])
+        if not (x_min < x_max and y_min < y_max):
+            raise ValueError(f"buff={buff} অনেক বড় — sampling area নেই। ছোট buff দিন।")
         x = np.random.uniform(x_min, x_max)
         y = np.random.uniform(y_min, y_max)
         kwargs.setdefault("color", BLACK)
