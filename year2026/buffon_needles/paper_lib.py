@@ -1,6 +1,6 @@
 """
 paper_lib — নোটবুক-পেপার স্টাইল chart toolkit
-Updated v2.1 | 2026-09-06  (random_point/random_points-এ buff = border restriction)
+Updated v2.2 | 2026-09-06  (add_needles + random_angles; _sample_coords refactor)
 
 Logical inheritance map:
     manim.Rectangle   + PaperOps       -> Paper
@@ -22,14 +22,12 @@ from manim import NumberPlane as _ManimNumberPlane
 
 
 class CoordinateOps:
-    """Axes/NumberPlane-এর mixin: random point tools (এখন instance method)।"""
+    """Axes/NumberPlane-এর mixin: random point / angle / needle tools।"""
 
-    def random_point(self, x_range=None, y_range=None, buff=0.0, **kwargs):
-        """একটা random Dot — default range = object-এর নিজের range।
+    def _sample_coords(self, n, x_range=None, y_range=None, buff=0.0):
+        """n টা random (x, y) pair — object-এর coordinate space-এ (np.ndarray)।
 
-        buff = border restriction (Munit): পুরো object-এর bbox থেকে চারদিক
-        (উপর, নিচ, বাম, ডান) buff পরিমাণ ভিতরে ঢুকে অদৃশ্য ছোট area-তে
-        point পড়ে। buff=0 (default) = আগের মতো পুরো area।
+        buff = border restriction (Munit): bbox থেকে চারদিকে buff ভিতরে।
         """
         if buff < 0:
             raise ValueError(f"buff must be >= 0, got {buff}")
@@ -43,8 +41,18 @@ class CoordinateOps:
             y_min, y_max = (y_range[0], y_range[1]) if y_range else (self.y_range[0], self.y_range[1])
         if not (x_min < x_max and y_min < y_max):
             raise ValueError(f"buff={buff} অনেক বড় — sampling area নেই। ছোট buff দিন।")
-        x = np.random.uniform(x_min, x_max)
-        y = np.random.uniform(y_min, y_max)
+        xs = np.random.uniform(x_min, x_max, n)
+        ys = np.random.uniform(y_min, y_max, n)
+        return np.column_stack([xs, ys])
+
+    def random_point(self, x_range=None, y_range=None, buff=0.0, **kwargs):
+        """একটা random Dot — default range = object-এর নিজের range।
+
+        buff = border restriction (Munit): পুরো object-এর bbox থেকে চারদিক
+        (উপর, নিচ, বাম, ডান) buff পরিমাণ ভিতরে ঢুকে অদৃশ্য ছোট area-তে
+        point পড়ে। buff=0 (default) = আগের মতো পুরো area।
+        """
+        x, y = self._sample_coords(1, x_range, y_range, buff)[0]
         kwargs.setdefault("color", BLACK)
         return Dot(self.c2p(x, y), **kwargs)
 
@@ -52,6 +60,41 @@ class CoordinateOps:
         """points সংখ্যক random Dot-এর VGroup; self.dots-এও save হয়।"""
         self.dots = VGroup(*(self.random_point(**kwargs) for _ in range(points)))
         return self.dots
+
+    def random_angles(self, angles=10, min_angle=0.0, max_angle=TAU):
+        """angles সংখ্যক random angle (radians) — np.ndarray (float)।"""
+        if min_angle > max_angle:
+            raise ValueError(f"min_angle ({min_angle}) > max_angle ({max_angle})")
+        return np.random.uniform(min_angle, max_angle, angles)
+
+    def add_needles(self, shape=None, needles=10, length=1.0, buff=None,
+                    min_angle=0.0, max_angle=TAU, **kwargs):
+        """Random position + random rotation-এ needles বসায় → VGroup।
+
+        shape   = prototype Mobject (SVG / Image / VMobject / …);
+                  None → ``length`` লম্বার classic Line needle।
+        needles = কতটা needle।
+        buff    = border restriction; None → auto = shape-এর half-diagonal
+                  (যেকোনো rotation-এ needle পুরো ভিতরে থাকবে)।
+        **kwargs = prototype-এর style (color, stroke_width, …)।
+        self.needles ও self.angles-এও save হয়।
+        """
+        prototype = shape.copy() if shape is not None else Line(ORIGIN, RIGHT * length)
+        if kwargs:
+            prototype.set(**kwargs)
+        if buff is None:
+            buff = np.hypot(prototype.width, prototype.height) / 2
+        coords = self._sample_coords(needles, buff=buff)
+        angles = self.random_angles(needles, min_angle, max_angle)
+        group = VGroup()
+        for (x, y), ang in zip(coords, angles):
+            m = prototype.copy()
+            m.move_to(self.c2p(x, y))
+            m.rotate(ang)
+            group.add(m)
+        self.needles = group
+        self.angles = angles
+        return group
 
 
 class PaperOps:
