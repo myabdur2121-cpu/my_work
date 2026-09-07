@@ -1,6 +1,6 @@
 """
 paper_lib — নোটবুক-পেপার স্টাইল chart toolkit
-Updated v2.2 | 2026-09-06  (add_needles + random_angles; _sample_coords refactor)
+Updated v2.3 | 2026-09-07  (add_needles: rotation + color_by_gradient params)
 
 Logical inheritance map:
     manim.Rectangle   + PaperOps       -> Paper
@@ -68,7 +68,8 @@ class CoordinateOps:
         return np.random.uniform(min_angle, max_angle, angles)
 
     def add_needles(self, shape=None, needles=10, length=1.0, buff=None,
-                    min_angle=0.0, max_angle=TAU, **kwargs):
+                    min_angle=0.0, max_angle=TAU, rotation=0.0,
+                    color_by_gradient=None, **kwargs):
         """Random position + random rotation-এ needles বসায় → VGroup।
 
         shape   = prototype Mobject (SVG / Image / VMobject / …);
@@ -76,16 +77,23 @@ class CoordinateOps:
         needles = কতটা needle।
         buff    = border restriction; None → auto = shape-এর half-diagonal
                   (যেকোনো rotation-এ needle পুরো ভিতরে থাকবে)।
+        rotation = base angle (radians): প্রতিটা needle-এর random angle-এর
+                  সাথে যোগ হয় — সব needle ঘোরানো ভঙ্গিতে বসবে।
+        color_by_gradient = color-এর list, যেমন [RED, BLUE] বা
+                  ["#8f959c", "#f2f5f8"] → needles-এ gradient fill।
         **kwargs = prototype-এর style (color, stroke_width, …)।
         self.needles ও self.angles-এও save হয়।
         """
         prototype = shape.copy() if shape is not None else Line(ORIGIN, RIGHT * length)
+        if color_by_gradient:
+            prototype.set_fill(color=list(color_by_gradient))
+            prototype.set_stroke(color=list(color_by_gradient))
         if kwargs:
             prototype.set(**kwargs)
         if buff is None:
             buff = np.hypot(prototype.width, prototype.height) / 2
         coords = self._sample_coords(needles, buff=buff)
-        angles = self.random_angles(needles, min_angle, max_angle)
+        angles = self.random_angles(needles, min_angle, max_angle) + rotation
         group = VGroup()
         for (x, y), ang in zip(coords, angles):
             m = prototype.copy()
