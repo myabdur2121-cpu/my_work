@@ -1,5 +1,4 @@
 from manim import * 
-
 class NeedleWiggle(AnimationGroup):
     """প্রতিটা needle-কে angle_range-এর ভিতরে random angle-এ wiggle করায় —
     natural কাঁপুনি, কোনো mechanical ভাব নেই।
@@ -32,4 +31,7 @@ class NeedleWiggle(AnimationGroup):
                 Wiggle(m, n_wiggles=n_wiggles, rotation_angle=mag,
                        scale_value=scale_value, run_time=single)
             )
-        super().__init__(*anims, lag_ratio=lag_ratio, run_time=run_time, **kwargs)
+        # group-এ আলাদা run_time দিই না — child-দের single সময় + manim-এর
+        # নিজের lag rule (start_i = i*lag_ratio*single) মিলে total নিজে নিজেই
+        # হুবহু run_time হয়; আলাদা দিলে হিসাব গড়বড় হয়
+        super().__init__(*anims, lag_ratio=lag_ratio, **kwargs)
