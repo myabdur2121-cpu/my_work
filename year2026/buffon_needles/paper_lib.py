@@ -1,6 +1,6 @@
 """
 paper_lib — নোটবুক-পেপার স্টাইল chart toolkit
-Updated v2.3 | 2026-09-07  (add_needles: rotation + color_by_gradient params)
+Updated v2.4 | 2026-09-07  (add_needles: layout param + random_layout — save/replay)
 
 Logical inheritance map:
     manim.Rectangle   + PaperOps       -> Paper
@@ -45,6 +45,31 @@ class CoordinateOps:
         ys = np.random.uniform(y_min, y_max, n)
         return np.column_stack([xs, ys])
 
+    def random_layout(self, n, x_range=None, y_range=None, buff=0.0, degrees=False):
+        """[[[x, y], angle], ...] — save/replay করার মতো পুরো layout data।
+
+        degrees=True হলে angle গুলো degree-এ (float), নাহলে radians-এ।
+        পরে add_needles(layout=...) দিয়ে হুবহু same layout ফেরানো যায়।
+        """
+        pts = self._sample_coords(n, x_range, y_range, buff)
+        angs = self.random_angles(n)
+        if degrees:
+            angs = np.degrees(angs)
+        return [[p.tolist(), float(a)] for p, a in zip(pts, angs)]
+
+    def _place_from_data(self, prototype, data, degrees, buff):
+        """data = [[(x,y), angle], ...] থেকে needles বসায় → VGroup।"""
+        group = VGroup()
+        for pt, ang in data:
+            a = np.radians(ang) if degrees else ang
+            m = prototype.copy()
+            m.move_to(self.c2p(*pt))
+            m.rotate(a)
+            group.add(m)
+        self.needles = group
+        self.angles = np.array([np.radians(a) if degrees else a for _, a in data])
+        return group
+
     def random_point(self, x_range=None, y_range=None, buff=0.0, **kwargs):
         """একটা random Dot — default range = object-এর নিজের range।
 
@@ -69,18 +94,24 @@ class CoordinateOps:
 
     def add_needles(self, shape=None, needles=10, length=1.0, buff=None,
                     min_angle=0.0, max_angle=TAU, rotation=0.0,
-                    color_by_gradient=None, **kwargs):
-        """Random position + random rotation-এ needles বসায় → VGroup।
+                    color_by_gradient=None, layout=None, degrees=False, **kwargs):
+        """Needles বসায় → VGroup। দুই mode:
+
+        RANDOM mode (layout=None): random position + random rotation।
+        CUSTOM mode (layout=[[ (x,y), angle ], ...]): হুবহু সেই data থেকে
+        বসায় — random_layout() দিয়ে save করে পরের render-এ same layout।
 
         shape   = prototype Mobject (SVG / Image / VMobject / …);
                   None → ``length`` লম্বার classic Line needle।
-        needles = কতটা needle।
+        needles = কতটা needle (random mode)।
         buff    = border restriction; None → auto = shape-এর half-diagonal
                   (যেকোনো rotation-এ needle পুরো ভিতরে থাকবে)।
         rotation = base angle (radians): প্রতিটা needle-এর random angle-এর
                   সাথে যোগ হয় — সব needle ঘোরানো ভঙ্গিতে বসবে।
         color_by_gradient = color-এর list, যেমন [RED, BLUE] বা
                   ["#8f959c", "#f2f5f8"] → needles-এ gradient fill।
+        layout  = custom [[(x, y), angle], ...] data (random-এর বদলে)।
+        degrees = True হলে layout-এর angle গুলো degree-এ।
         **kwargs = prototype-এর style (color, stroke_width, …)।
         self.needles ও self.angles-এও save হয়।
         """
@@ -92,6 +123,8 @@ class CoordinateOps:
             prototype.set(**kwargs)
         if buff is None:
             buff = np.hypot(prototype.width, prototype.height) / 2
+        if layout is not None:
+            return self._place_from_data(prototype, layout, degrees, buff)
         coords = self._sample_coords(needles, buff=buff)
         angles = self.random_angles(needles, min_angle, max_angle) + rotation
         group = VGroup()
