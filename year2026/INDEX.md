@@ -7,6 +7,8 @@
 | [buffon_needles](buffon_needles/) | notebook-paper toolkit (`paper_lib`) + needle experiment | 🚧 | paper_lib.py, scene_construct.py |
 | [line_intersection](line_intersection/) | দুই রেখার ছেদের math (slope ❌ → cross-product ✅) | ✅ graduated → manim-extras | final.py |
 | [bbox_shift](bbox_shift/) | bounding box helper — `MobjectHelper.get_bbox` | ✅ | helpers.py |
+| [window_viewport](window_viewport/) | modular window & viewport bounding toolkit (`Window`, `BoundedPlane`) | ✅ | window.py, demo.py |
+
 
 ## INDEX নিয়ম
 
