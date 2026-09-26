@@ -8,6 +8,7 @@
 | [line_intersection](line_intersection/) | দুই রেখার ছেদের math (slope ❌ → cross-product ✅) | ✅ graduated → manim-extras | final.py |
 | [bbox_shift](bbox_shift/) | bounding box helper — `MobjectHelper.get_bbox` | ✅ | helpers.py |
 | [window_viewport](window_viewport/) | modular window & viewport bounding toolkit (`Window`, `BoundedPlane`) | ✅ | window.py, demo.py |
+| [binomial_theorem](binomial_theorem/) | Binomial Theorem ভিডিও (৩৩ মি.) — Manim + বাংলা narration, practice সাইট ও PDF | 🚧 | project/part1–4.py, common.py |
 
 
 ## INDEX নিয়ম
