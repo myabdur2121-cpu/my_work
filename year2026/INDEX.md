@@ -9,6 +9,8 @@
 | [bbox_shift](bbox_shift/) | bounding box helper — `MobjectHelper.get_bbox` | ✅ | helpers.py |
 | [window_viewport](window_viewport/) | modular window & viewport bounding toolkit (`Window`, `BoundedPlane`) | ✅ | window.py, demo.py |
 | [binomial_theorem](binomial_theorem/) | Binomial Theorem ভিডিও (৩৩ মি.) — Manim + বাংলা narration, practice সাইট ও PDF | 🚧 | project/part1–4.py, common.py |
+| [missing_triangle](missing_triangle/) | Missing Triangle ধাঁধার ভিডিও, ১০ পর্ব | 🚧 | part1–10.py |
+| [academy](academy/) | AI Digital Teacher engine + বাংলা ১ম পত্রের পাঠ-ভিডিও | 🚧 | ai_setup/*.md, part1.py |
 
 
 ## INDEX নিয়ম
