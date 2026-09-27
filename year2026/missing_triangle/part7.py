@@ -1982,10 +1982,10 @@ class MissingTrianglePart7(MovingCameraScene):
 
 
         end_equation = MathTex(
-            r"\boxed{
+            r"""\boxed{
                 A=\frac12x^2
                 \left(\frac1{40}\right)
-            }",
+            }""",
             color=BLACK,
         ).scale(0.82)
 

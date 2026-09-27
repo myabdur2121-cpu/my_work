@@ -514,9 +514,9 @@ class MissingTrianglePart10(MovingCameraScene):
 
 
         self.final_truth = MathTex(
-            r"\boxed{
+            r"""\boxed{
                 \text{The ``straight'' edge was never straight.}
-            }",
+            }""",
             color=BLACK,
         ).scale(0.72)
 

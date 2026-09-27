@@ -1704,9 +1704,9 @@ class MissingTrianglePart8(Scene):
 
 
         hook_equation = MathTex(
-            r"\boxed{
+            r"""\boxed{
                 \frac25-\frac38=\frac1{40}
-            }",
+            }""",
             color=BLACK,
         ).scale(0.95)
 
